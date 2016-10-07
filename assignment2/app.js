@@ -1,62 +1,68 @@
 (function(){
   'use strict';
 
-  angular.module('LunchCheck', [])
-    .controller('LunchCheckController', LunchCheckControllerImpl);
+  angular.module("ShoppingListCheckOff", [])
+    .controller("ToBuyController", ToBuyController)
+    .controller("AlreadyBoughtController", AlreadyBoughtController)
+    .service("ShoppingListCheckOffService", ShoppingListCheckOffService);
 
-  LunchCheckControllerImpl.$inject = ['$scope'];
-  function LunchCheckControllerImpl($scope)
-  {
-    function filterEmptyString(e)
+    ToBuyController.$inject['ShoppingListCheckOffService'];
+    function ToBuyController(ShoppingListCheckOffService)
     {
-      return e.trim().length > 0;
+      var toBuy = this;
+
+      toBuy.shoppingList = ShoppingListCheckOffService.initializeToBuyItems();
+      //toBuy.bought = ShoppingListCheckOffService.boughtItem(index);
     }
 
-    $scope.checkIfTooMuch = function()
+    AlreadyBoughtController.$inject['ShoppingListCheckOffService'];
+    function AlreadyBoughtController(ShoppingListCheckOffService)
     {
-      var input = $scope.dishes;
-      var good = false;
+      var alreadyBought = this;
 
-      if(input != null)
-      {
-        var dishes = input.split(',').filter(filterEmptyString);
-        var numOfDishes = dishes.length;
+    }
 
-        // Check if empty
-        if(numOfDishes <= 0 || (numOfDishes == 1 && dishes[0].length <= 0))
+    function ShoppingListCheckOffService()
+    {
+      var service = this;
+
+      var toBuyItems = [];
+      var boughtItems = [];
+
+      service.initializeToBuyItems = function()
         {
-          good = false;
-          $scope.checkIfTooMuchMsg = "Please enter data first";
-        }
-        else if(numOfDishes <= 3)
+          var defaultShoppingList =
+            [
+                { "name": "cookies", "quantity": 10 },
+                { "name": "burgers", "quantity": 5 },
+                { "name": "ice creams", "quantity": 8 },
+                { "name": "pizzas", "quantity": 15 },
+                { "name": "salads", "quantity": 20 },
+                { "name": "steaks", "quantity": 3 },
+                { "name": "sea bass", "quantity": 7 },
+                { "name": "pumpkin soups", "quantity": 11 },
+            ];
+
+          var item;
+          for(item in defaultShoppingList)
+          {
+            toBuyItems.push(item);
+          }
+        };
+
+      service.boughtItem = function(index)
         {
-          good = true;
-          $scope.checkIfTooMuchMsg = "Enjoy!";
-        }
-        else
+          boughtItems.push(toBuyItems[index]);
+          toBuyItems.splice(index, 1);
+        };
+
+      service.getToBuyItems = function()
         {
-          good = true;
-          $scope.checkIfTooMuchMsg = "Too much!";
-        }
-      }
-      else
-      {
-        good = false;
-        $scope.checkIfTooMuchMsg = "Please enter data first";
-      }
-
-      if(good)
-      {
-        $scope.lunchMenuStyle = {"border-color": "green"};
-        $scope.messageStyle = {"color": "green"};
-      }
-      else
-      {
-        $scope.lunchMenuStyle = {"border-color": "red"};
-        $scope.messageStyle = {"color": "red"};
-      }
-
-    };
-
-  }
+          return toBuyItems;
+        };
+      service.getBoughtItems = function()
+        {
+          return boughtItems;
+        };
+    }
 })();
