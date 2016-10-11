@@ -6,20 +6,45 @@
     .controller("AlreadyBoughtController", AlreadyBoughtController)
     .service("ShoppingListCheckOffService", ShoppingListCheckOffService);
 
-    ToBuyController.$inject['ShoppingListCheckOffService'];
+    ToBuyController.$inject = ['ShoppingListCheckOffService'];
     function ToBuyController(ShoppingListCheckOffService)
     {
       var toBuy = this;
 
-      toBuy.shoppingList = ShoppingListCheckOffService.initializeToBuyItems();
-      //toBuy.bought = ShoppingListCheckOffService.boughtItem(index);
+      ShoppingListCheckOffService.initializeShoppingList();
+      toBuy.shoppingList = ShoppingListCheckOffService.getToBuyItems();
+
+      toBuy.resetShoppingList = function()
+        {
+          ShoppingListCheckOffService.initializeShoppingList();
+        };
+
+      toBuy.bought = function(index)
+        {
+          ShoppingListCheckOffService.boughtItem(index);
+        };
+
+      toBuy.isEmpty = function()
+        {
+          return ShoppingListCheckOffService.getToBuyItems().length <= 0;
+        };
     }
 
-    AlreadyBoughtController.$inject['ShoppingListCheckOffService'];
+    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
     function AlreadyBoughtController(ShoppingListCheckOffService)
     {
       var alreadyBought = this;
 
+      alreadyBought.shoppedList = ShoppingListCheckOffService.getBoughtItems();
+      alreadyBought.isEmpty = function()
+        {
+          return ShoppingListCheckOffService.getBoughtItems().length <= 0;
+        };
+
+      alreadyBought.resetShoppedList = function()
+        {
+          ShoppingListCheckOffService.resetShoppedList();
+        };
     }
 
     function ShoppingListCheckOffService()
@@ -29,7 +54,7 @@
       var toBuyItems = [];
       var boughtItems = [];
 
-      service.initializeToBuyItems = function()
+      service.initializeShoppingList = function()
         {
           var defaultShoppingList =
             [
@@ -43,11 +68,16 @@
                 { "name": "pumpkin soups", "quantity": 11 },
             ];
 
-          var item;
-          for(item in defaultShoppingList)
+          var index;
+          for(index in defaultShoppingList)
           {
-            toBuyItems.push(item);
+            toBuyItems.push(defaultShoppingList[index]);
           }
+        };
+
+      service.resetShoppedList = function()
+        {
+          boughtItems.splice(0, boughtItems.length);
         };
 
       service.boughtItem = function(index)
