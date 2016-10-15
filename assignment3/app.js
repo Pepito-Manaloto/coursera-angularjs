@@ -70,11 +70,11 @@
             narrowItDown.items.splice(index, 1);
             if(narrowItDown.items.length <= 0)
             {
-              narrowItDown.myTitle = "";
+              narrowItDown.title = "";
             }
             else
             {
-              narrowItDown.myTitle = "Searched Items: (" + narrowItDown.items.length + ")";
+              narrowItDown.title = "Searched Items: (" + narrowItDown.items.length + ")";
             }
           };
     }
