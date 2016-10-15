@@ -14,8 +14,9 @@
         {
           templateUrl: 'foundItems.html',
           scope: {
-            foundItems: '<items',
-            onRemove: '&'
+            items: '<',
+            myTitle: '@title',
+            searched: '&'
           },
           controller: FoundItemsController,
           controllerAs: 'list',
@@ -33,6 +34,11 @@
       list.removeItem = function(index)
         {
           MenuSearchService.removeMatchedItem(index);
+
+          if(MenuSearchService.getMatchedItems().length <= 0)
+          {
+            list.myTitle = "";
+          }
         };
     }
 
@@ -43,32 +49,59 @@
 
       narrowItDown.items = [];
       narrowItDown.message = "";
+      narrowItDown.title = "";
 
+      var doneSearching = false;
       narrowItDown.search = function(keyword)
         {
-          var promise = MenuSearchService.getMatchedMenuItems();
+          if(keyword == null || keyword.trim().length <= 0)
+          {
+            narrowItDown.items = [];
+            narrowItDown.title = "Nothing Found.";
+          }
+          else
+          {
+            var promise = MenuSearchService.getMatchedMenuItems();
 
-          promise.then(function(response)
-            {
-              var result = [];
-              var menuItems = response.data.menu_items;
-              var length = menuItems.length;
-              for (var i = 0; i < length; i++)
+            promise.then(function(response)
               {
-                  var description = menuItems[i]['description'];
-                  if(description.includes(keyword))
-                  {
-                    result.push(menuItems[i]);
-                  }
-              }
-              MenuSearchService.setMatchedItems(result);
-              narrowItDown.items = MenuSearchService.getMatchedMenuItems();
-            })
-          .catch(function (error)
-            {
-              console.log(error);
-            });
+                MenuSearchService.resetMatchedItems();
+                var menuItems = response.data.menu_items;
+                var length = menuItems.length;
+                for (var i = 0; i < length; i++)
+                {
+                    var description = menuItems[i]['description'];
+
+                    if(description.includes(keyword))
+                    {
+                      MenuSearchService.addItem(menuItems[i]);
+                    }
+                }
+
+                if(MenuSearchService.getMatchedItems().length <= 0)
+                {
+                  narrowItDown.title = "Nothing Found.";
+                }
+                else
+                {
+                  narrowItDown.title = "Searched Items:"
+                }
+
+                narrowItDown.items = MenuSearchService.getMatchedItems();
+              })
+            .catch(function (error)
+              {
+                console.log(error);
+              });
+          }
+
+          doneSearching = true;
         };
+
+        narrowItDown.searched = function()
+          {
+            return doneSearching;
+          };
     }
 
     MenuSearchService.$inject = ['$http', 'MenuItemsUrl'];
@@ -86,9 +119,14 @@
             });
         };
 
-      menuSearch.setMatchedItems = function(items)
+      menuSearch.resetMatchedItems = function()
         {
-          matchedItems = items;
+          matchedItems = [];
+        };
+
+      menuSearch.addItem = function(item)
+        {
+          matchedItems.push(item);
         };
 
       menuSearch.getMatchedItems = function()
@@ -98,7 +136,8 @@
 
       menuSearch.removeMatchedItem = function(index)
         {
-          matchedItems.splice(itemIndex, 1);
+         console.log(index);
+          matchedItems.splice(index, 1);
         };
     }
 })();

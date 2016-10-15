@@ -14,14 +14,17 @@
     <h1>Narrow Down Your Chinese Menu Choice</h1>
 
     <div class="form-group">
-      <input type="text" placeholder="search term" class="form-control" ng-model="narrowItDown.keyword">
+      <input type="text" placeholder="search term" class="form-control" ng-model="narrowItDown.keyword" ng-keydown="$event.which === 13 && narrowItDown.search(narrowItDown.keyword);">
     </div>
     <div class="form-group narrow-button">
       <button class="btn btn-primary" ng-click="narrowItDown.search(narrowItDown.keyword);">Narrow It Down For Me!</button>
     </div>
 
     <!-- found-items should be implemented as a component -->
-    <found-items found-items="list.items" on-remove="list.onRemove(index)"></found-items>
+    <found-items class="row-fluid"
+                 title="{{narrowItDown.title}}"
+                 items="narrowItDown.items"
+                 searched="narrowItDown.searched()"></found-items>
   </div>
 
 </body>
