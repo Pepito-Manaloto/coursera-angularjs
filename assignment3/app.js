@@ -3,7 +3,6 @@
 
   angular.module('NarrowItDownApp', [])
     .controller('NarrowItDownController', NarrowItDownController)
-    .controller('FoundItemsController', FoundItemsController)
     .service('MenuSearchService', MenuSearchService)
     .constant('MenuItemsUrl',"https://davids-restaurant.herokuapp.com/menu_items.json")
     .directive('foundItems', FoundItems);
@@ -13,33 +12,19 @@
       var ddo =
         {
           templateUrl: 'foundItems.html',
+
           scope: {
             items: '<',
             myTitle: '@title',
-            searched: '&'
+            searched: '&',
+            onRemove: '&'
           },
-          controller: FoundItemsController,
+          controller: NarrowItDownController,
           controllerAs: 'list',
           bindToController: true
         };
 
       return ddo;
-    }
-
-    FoundItemsController.$inject = ['MenuSearchService'];
-    function FoundItemsController(MenuSearchService)
-    {
-      var list = this;
-
-      list.removeItem = function(index)
-        {
-          MenuSearchService.removeMatchedItem(index);
-
-          if(MenuSearchService.getMatchedItems().length <= 0)
-          {
-            list.myTitle = "";
-          }
-        };
     }
 
     NarrowItDownController.$inject = ['MenuSearchService'];
@@ -61,33 +46,19 @@
           }
           else
           {
-            var promise = MenuSearchService.getMatchedMenuItems();
-
-            promise.then(function(response)
+            MenuSearchService.getMatchedMenuItems(keyword)
+              .then(function(response)
               {
-                MenuSearchService.resetMatchedItems();
-                var menuItems = response.data.menu_items;
-                var length = menuItems.length;
-                for (var i = 0; i < length; i++)
-                {
-                    var description = menuItems[i]['description'];
+                narrowItDown.items = response;
 
-                    if(description.includes(keyword))
-                    {
-                      MenuSearchService.addItem(menuItems[i]);
-                    }
-                }
-
-                if(MenuSearchService.getMatchedItems().length <= 0)
+                if(narrowItDown.items.length <= 0)
                 {
                   narrowItDown.title = "Nothing Found.";
                 }
                 else
                 {
-                  narrowItDown.title = "Searched Items:"
+                  narrowItDown.title = "Searched Items: (" + narrowItDown.items.length + ")";
                 }
-
-                narrowItDown.items = MenuSearchService.getMatchedItems();
               })
             .catch(function (error)
               {
@@ -102,42 +73,49 @@
           {
             return doneSearching;
           };
+
+        narrowItDown.removeItem = function(index)
+          {
+            narrowItDown.items.splice(index, 1);
+            if(narrowItDown.items.length <= 0)
+            {
+              narrowItDown.myTitle = "";
+            }
+            else
+            {
+              narrowItDown.myTitle = "Searched Items: (" + narrowItDown.items.length + ")";
+            }
+          };
     }
 
     MenuSearchService.$inject = ['$http', 'MenuItemsUrl'];
     function MenuSearchService($http, MenuItemsUrl)
     {
       var menuSearch = this;
-      var matchedItems = [];
 
-      menuSearch.getMatchedMenuItems = function()
+      menuSearch.getMatchedMenuItems = function(keyword)
         {
           return $http(
             {
               method: 'GET',
               url: MenuItemsUrl,
-            });
-        };
+            }).then(function(response)
+              {
+                var result = [];
+                var menuItems = response.data.menu_items;
+                var length = menuItems.length;
+                for (var i = 0; i < length; i++)
+                {
+                    var description = menuItems[i]['description'];
 
-      menuSearch.resetMatchedItems = function()
-        {
-          matchedItems = [];
-        };
+                    if(description.includes(keyword))
+                    {
+                      result.push(menuItems[i]);
+                    }
+                }
 
-      menuSearch.addItem = function(item)
-        {
-          matchedItems.push(item);
-        };
-
-      menuSearch.getMatchedItems = function()
-        {
-          return matchedItems;
-        };
-
-      menuSearch.removeMatchedItem = function(index)
-        {
-         console.log(index);
-          matchedItems.splice(index, 1);
+                return result;
+              });
         };
     }
 })();

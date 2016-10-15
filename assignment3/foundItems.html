@@ -1,7 +1,7 @@
-<h2 ng-show="list.searched()">{{list.myTitle}}</h2>
+<h2 ng-show="list.searched">{{list.myTitle}}</h2>
 <ul>
   <li ng-repeat="found in list.items">
     {{found.name}}, {{found.short_name}}, {{found.description}}
-    <button class="btn btn-primary" ng-click="list.removeItem($index)">Don't want this one!</button>
+    <button class="btn btn-primary" ng-click="list.removeItem({index: $index})">Don't want this one!</button>
   </li>
 </ul>
