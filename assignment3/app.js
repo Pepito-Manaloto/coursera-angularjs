@@ -16,7 +16,6 @@
           scope: {
             items: '<',
             myTitle: '@title',
-            searched: '&',
             onRemove: '&'
           },
           controller: NarrowItDownController,
@@ -36,7 +35,6 @@
       narrowItDown.message = "";
       narrowItDown.title = "";
 
-      var doneSearching = false;
       narrowItDown.search = function(keyword)
         {
           if(keyword == null || keyword.trim().length <= 0)
@@ -65,14 +63,7 @@
                 console.log(error);
               });
           }
-
-          doneSearching = true;
         };
-
-        narrowItDown.searched = function()
-          {
-            return doneSearching;
-          };
 
         narrowItDown.removeItem = function(index)
           {
